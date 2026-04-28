@@ -1,0 +1,5 @@
+{
+  "name": "vplay 2",
+  "description": "A live TV streaming application with channel switching, program guides, and responsive design.",
+  "requestFramePermissions": []
+}
