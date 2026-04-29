@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useRef, ChangeEvent, FormEvent, ReactNode } from "react";
-import { Search, User, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, ArrowRight, TrendingUp, Star, Crown } from "lucide-react";
+import { useState, useEffect, useRef, useCallback, ChangeEvent, FormEvent, ReactNode } from "react";
+import { Search, User, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, FlaskConical as Flask } from "lucide-react";
 import Hls from "hls.js";
 import { motion, AnimatePresence, MotionConfig } from "motion/react";
 import { auth, db, handleFirestoreError, OperationType } from "./firebase";
@@ -22,7 +22,7 @@ const SettingsIcon = ({ className }: { className?: string }) => (
 
 const SplashScreen = ({ isDark, onEnter }: { isDark: boolean, onEnter: () => void }) => {
   useEffect(() => {
-    const timer = setTimeout(onEnter, 3000);
+    const timer = setTimeout(onEnter, 5000);
     return () => clearTimeout(timer);
   }, [onEnter]);
 
@@ -37,7 +37,7 @@ const SplashScreen = ({ isDark, onEnter }: { isDark: boolean, onEnter: () => voi
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="flex flex-col items-center space-y-12"
+        className="flex flex-col items-center space-y-10"
       >
         <div className="relative">
           <motion.img 
@@ -51,12 +51,21 @@ const SplashScreen = ({ isDark, onEnter }: { isDark: boolean, onEnter: () => voi
           />
         </div>
 
-        <div className="flex flex-col items-center space-y-6">
+        <div className="flex flex-col items-center space-y-4 px-6 text-center">
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 1 }}
+            className="text-white/40 text-sm md:text-base font-medium tracking-[0.2em] uppercase text-center max-w-xs md:max-w-none"
+          >
+            Gói trọn Việt Nam trong tầm mắt bạn
+          </motion.p>
+          
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-            className="flex items-center gap-4"
+            transition={{ delay: 1, duration: 0.5 }}
+            className="flex items-center gap-4 pt-4"
           >
             <img 
               src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
@@ -66,15 +75,6 @@ const SplashScreen = ({ isDark, onEnter }: { isDark: boolean, onEnter: () => voi
             />
             <span className="text-white/60 text-xl font-medium tracking-tight">Chào mừng!</span>
           </motion.div>
-          
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 1 }}
-            className="text-white/40 text-sm md:text-base font-medium tracking-[0.2em] uppercase"
-          >
-            Gói trọn Việt Nam trong tầm mắt bạn
-          </motion.p>
         </div>
       </motion.div>
     </motion.div>
@@ -99,7 +99,8 @@ const Sparkles2 = ({ className }: { className?: string }) => (
 const baseTabs = [
   { name: "Trang chủ", icon: Home, id: "Trang chủ" },
   { name: "Phát sóng", icon: Tv, id: "Phát sóng" },
-  { name: "Lưu trữ", icon: Calendar, id: "Sự kiện" },
+  { name: "Bảo tàng lưu trữ", icon: Calendar, id: "Lưu trữ" },
+  { name: "Quản trị", icon: Shield, id: "Quản trị" },
   { name: "Cài đặt", icon: Settings, id: "Cài đặt" },
 ];
 
@@ -220,7 +221,7 @@ function ChannelLogo({ src, alt, className, isDark, liquidGlass }: { src: string
       onError={() => setError(true)}
       className={`${className} object-contain transition-all duration-300 ${
         liquidGlass === "tinted" 
-          ? "grayscale brightness-0 opacity-100" 
+          ? "opacity-100" 
           : !isDark ? "drop-shadow-[0_8px_16px_rgba(0,0,0,0.15)]" : ""
       } ${scaleClass}`} 
     />
@@ -368,11 +369,15 @@ function HomeContent({ setActiveTab, setActiveChannel, isDark, favorites, toggle
             key={`text-${slideIndex}`}
             className="space-y-4"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-black uppercase tracking-widest mb-2">
-              <Sparkles className="w-3 h-3 text-yellow-400" />
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-semibold uppercase tracking-widest mb-2">
+              <img 
+                src="https://static.wikia.nocookie.net/ftv/images/d/d9/SMR26.png/revision/latest/scale-to-width-down/1000?cb=20260427024320&path-prefix=vi"
+                alt="SMR26"
+                className="w-4 h-4 object-contain"
+              />
               {slides[slideIndex].tag}
             </div>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-white uppercase leading-tight max-w-2xl">
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tighter text-white uppercase leading-tight max-w-2xl">
               {slides[slideIndex].title}
             </h1>
             <p className="text-white/70 text-sm md:text-base font-medium max-w-xl leading-relaxed">
@@ -389,6 +394,36 @@ function HomeContent({ setActiveTab, setActiveChannel, isDark, favorites, toggle
           <button onClick={() => paginate(1)} className="p-3 rounded-full bg-white/10 backdrop-blur-2xl text-white hover:bg-white/20 hover:scale-110 transition-all border border-white/10">
             <ChevronRight size={24} />
           </button>
+        </div>
+      </div>
+
+      {/* Suggested Section - Moved up */}
+      <div className="space-y-10">
+        <div className="flex flex-col gap-2 px-2">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500">
+              <Sparkles size={18} />
+            </div>
+            <h1 className={`text-3xl font-black tracking-tighter ${isDark ? "text-white" : "text-slate-900"}`}>Gợi ý cho bạn</h1>
+          </div>
+          <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[9px] ml-11">TOP TRENDING & RECOMMENDED FOR YOU</p>
+        </div>
+        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
+          {randomChannels.map(ch => (
+            <ChannelCard 
+              key={`${ch.name}-${ch.stream}`} 
+              ch={ch} 
+              className="hover:scale-105"
+              onClick={() => {
+                setActiveChannel(ch);
+                setActiveTab("Phát sóng");
+              }} 
+              isDark={isDark} 
+              favorites={favorites} 
+              toggleFavorite={toggleFavorite} 
+              liquidGlass={liquidGlass}
+            />
+          ))}
         </div>
       </div>
 
@@ -425,12 +460,12 @@ function HomeContent({ setActiveTab, setActiveChannel, isDark, favorites, toggle
             </div>
 
             <div className="flex-1 space-y-8 relative z-10 text-center xl:text-left">
-              <div className="inline-flex items-center gap-3 px-6 py-2 rounded-2xl bg-purple-500 text-white font-black text-xs uppercase tracking-[0.3em] shadow-[0_10px_30px_rgba(168,85,247,0.4)]">
+              <div className="inline-flex items-center gap-3 px-6 py-2 rounded-2xl bg-purple-500 text-white font-semibold text-xs uppercase tracking-[0.3em] shadow-[0_10px_30px_rgba(168,85,247,0.4)]">
                 <Crown size={16} /> 
                 Quyền lợi tối thượng
               </div>
               
-              <h2 className={`text-5xl md:text-7xl font-black tracking-tight leading-[0.95] ${isDark ? "text-white" : "text-slate-900"}`}>
+              <h2 className={`text-5xl md:text-7xl font-semibold tracking-tight leading-[0.95] ${isDark ? "text-white" : "text-slate-900"}`}>
                 Xem mượt hơn, <br /> 
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400">
                   Riêng tư hơn
@@ -452,23 +487,23 @@ function HomeContent({ setActiveTab, setActiveChannel, isDark, favorites, toggle
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${feat.color} bg-white/5 border border-white/10 backdrop-blur-xl shadow-lg`}>
                          <feat.icon size={20} fill={feat.text === "Yêu thích" ? "currentColor" : "none"} />
                       </div>
-                      <span className={`text-sm font-black uppercase tracking-widest ${isDark ? "text-white/60" : "text-slate-500"}`}>{feat.text}</span>
+                      <span className={`text-sm font-semibold uppercase tracking-widest ${isDark ? "text-white/60" : "text-slate-500"}`}>{feat.text}</span>
                    </div>
                  ))}
               </div>
             </div>
 
             <div className="flex flex-col gap-6 shrink-0 w-full xl:w-[420px] relative z-10">
-               <motion.button 
-                 onClick={onLogin}
-                 whileHover={{ scale: 1.02, y: -5 }}
-                 whileTap={{ scale: 0.98 }}
-                 className="w-full h-24 relative group/login overflow-hidden bg-white text-black font-black rounded-[36px] transition-all shadow-[0_30px_70px_rgba(255,255,255,0.15)] flex items-center justify-center gap-4 text-2xl"
-               >
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 opacity-0 group-hover/login:opacity-10 transition-opacity" />
-                  ĐĂNG NHẬP NGAY
-                  <ArrowRight className="w-8 h-8 group-hover/login:translate-x-3 transition-transform" />
-               </motion.button>
+                 <motion.button 
+                  onClick={onLogin}
+                  whileHover={{ scale: 1.02, y: -5 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full h-24 relative group/login overflow-hidden bg-white text-black font-semibold rounded-[36px] transition-all shadow-[0_30px_70px_rgba(255,255,255,0.15)] flex items-center justify-center gap-4 text-2xl"
+                >
+                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 opacity-0 group-hover/login:opacity-10 transition-opacity" />
+                   ĐĂNG NHẬP NGAY
+                   <ArrowRight className="w-8 h-8 group-hover/login:translate-x-3 transition-transform" />
+                </motion.button>
                
                <div className="flex items-center justify-center gap-6">
                   <div className="flex -space-x-3">
@@ -495,12 +530,12 @@ function HomeContent({ setActiveTab, setActiveChannel, isDark, favorites, toggle
             <div className="p-3 w-fit rounded-2xl bg-blue-500/10 text-blue-500">
               <Monitor size={28} />
             </div>
-            <h3 className={`text-3xl font-black tracking-tighter ${isDark ? "text-white" : "text-slate-900"}`}>XEM VPLAY MỌI NƠI</h3>
+            <h3 className={`text-3xl font-semibold tracking-tighter ${isDark ? "text-white" : "text-slate-900"}`}>XEM VPLAY MỌI NƠI</h3>
             <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-xs">
               Ứng dụng nền tảng Web mang lại trải nghiệm xem truyền hình mượt mà trên cả máy tính, máy tính bảng và điện thoại mà không cần cài đặt.
             </p>
           </div>
-          <div className="mt-8 flex items-center gap-2 text-blue-500 font-black text-[10px] uppercase tracking-widest group-hover:translate-x-2 transition-transform">
+          <div className="mt-8 flex items-center gap-2 text-blue-500 font-semibold text-[10px] uppercase tracking-widest group-hover:translate-x-2 transition-transform">
             Khám phá công nghệ <ArrowRight size={14} />
           </div>
         </div>
@@ -511,12 +546,12 @@ function HomeContent({ setActiveTab, setActiveChannel, isDark, favorites, toggle
             <div className="p-3 w-fit rounded-2xl bg-amber-500/10 text-amber-500">
               <Zap size={28} />
             </div>
-            <h3 className={`text-3xl font-black tracking-tighter ${isDark ? "text-white" : "text-slate-900"}`}>TỐC ĐỘ 4K SIÊU NHANH</h3>
+            <h3 className={`text-3xl font-semibold tracking-tighter ${isDark ? "text-white" : "text-slate-900"}`}>TỐC ĐỘ 4K SIÊU NHANH</h3>
             <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-xs">
               Sử dụng CDN đa khu vực giúp luồng phát video đạt chất lượng 4K AI sắc nét với độ trễ tối thiểu, không giật lag ngay cả giờ cao điểm.
             </p>
           </div>
-          <div className="mt-8 flex items-center gap-2 text-amber-500 font-black text-[10px] uppercase tracking-widest group-hover:translate-x-2 transition-transform">
+          <div className="mt-8 flex items-center gap-2 text-amber-500 font-semibold text-[10px] uppercase tracking-widest group-hover:translate-x-2 transition-transform">
             Kiểm tra đường truyền <ArrowRight size={14} />
           </div>
         </div>
@@ -530,7 +565,7 @@ function HomeContent({ setActiveTab, setActiveChannel, isDark, favorites, toggle
               <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center text-red-500">
                 <Heart size={18} fill="currentColor" />
               </div>
-              <h3 className={`text-3xl font-black tracking-tighter ${isDark ? "text-white" : "text-slate-900"}`}>Truy cập nhanh</h3>
+              <h3 className={`text-3xl font-semibold tracking-tighter ${isDark ? "text-white" : "text-slate-900"}`}>Truy cập nhanh</h3>
             </div>
             <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[9px] ml-11">QUICK ACCESS TO SAVED CHANNELS</p>
           </div>
@@ -588,7 +623,54 @@ function HomeContent({ setActiveTab, setActiveChannel, isDark, favorites, toggle
 }
 
 
-function TVContent({ active, setActive, isDark, favorites, toggleFavorite, user, onLogin, isDev, liquidGlass, sortOrder, setSortOrder, showSplash }: { 
+function IndividualPlayer({ channel, isMuted, volume, isDark }: { channel: Channel, isMuted: boolean, volume: number, isDark: boolean }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<Hls | null>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+    }
+
+    if (Hls.isSupported()) {
+      const hls = new Hls({ enableWorker: true });
+      hlsRef.current = hls;
+      hls.loadSource(channel.stream);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play().catch(() => {});
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = channel.stream;
+    }
+
+    return () => {
+      if (hlsRef.current) hlsRef.current.destroy();
+    };
+  }, [channel]);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = volume;
+      videoRef.current.muted = isMuted;
+    }
+  }, [volume, isMuted]);
+
+  return (
+    <video 
+      ref={videoRef} 
+      className="w-full h-full object-cover" 
+      autoPlay 
+      playsInline
+      muted={isMuted}
+    />
+  );
+}
+
+function TVContent({ active, setActive, isDark, favorites, toggleFavorite, user, onLogin, isDev, liquidGlass, sortOrder, setSortOrder, showSplash, featureFlags, searchQuery }: { 
   active: Channel, 
   setActive: (ch: Channel) => void, 
   isDark: boolean,
@@ -600,7 +682,9 @@ function TVContent({ active, setActive, isDark, favorites, toggleFavorite, user,
   liquidGlass: "glassy" | "tinted",
   sortOrder: "default" | "az" | "za",
   setSortOrder: (val: "default" | "az" | "za") => void,
-  showSplash?: boolean
+  showSplash?: boolean,
+  featureFlags: { [key: string]: boolean },
+  searchQuery: string
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -610,7 +694,6 @@ function TVContent({ active, setActive, isDark, favorites, toggleFavorite, user,
   const [levels, setLevels] = useState<Hls.Level[]>([]);
   const [currentLevel, setCurrentLevel] = useState(-1);
   const [showQualityMenu, setShowQualityMenu] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("Tất cả");
   const [streamError, setStreamError] = useState<string | null>(null);
 
@@ -621,6 +704,43 @@ function TVContent({ active, setActive, isDark, favorites, toggleFavorite, user,
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+
+  // Multiview state
+  const [isMultiview, setIsMultiview] = useState(false);
+  const [multiviewCount, setMultiviewCount] = useState(4); // Default 4 channels
+  const [multiviewChannels, setMultiviewChannels] = useState<(Channel | null)[]>([]);
+  const [multiviewVolumes, setMultiviewVolumes] = useState<{ [key: number]: number }>({});
+  const [showLayoutMenu, setShowLayoutMenu] = useState(false);
+
+  useEffect(() => {
+    if (multiviewChannels.length === 0) {
+      setMultiviewChannels([active, ...Array(multiviewCount - 1).fill(null)]);
+    } else {
+      const newChannels = [...multiviewChannels];
+      if (newChannels.length < multiviewCount) {
+        setMultiviewChannels([...newChannels, ...Array(multiviewCount - newChannels.length).fill(null)]);
+      } else if (newChannels.length > multiviewCount) {
+        setMultiviewChannels(newChannels.slice(0, multiviewCount));
+      }
+    }
+  }, [multiviewCount]);
+
+  useEffect(() => {
+    if (isMultiview && multiviewChannels[0]?.name !== active.name) {
+      setMultiviewChannels(prev => {
+        const next = [...prev];
+        next[0] = active;
+        return next;
+      });
+    }
+  }, [active, isMultiview]);
+
+  const toggleMultiview = () => {
+    if (!isMultiview) {
+      setMultiviewChannels([active, ...Array(multiviewCount - 1).fill(null)]);
+    }
+    setIsMultiview(!isMultiview);
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -892,10 +1012,84 @@ function TVContent({ active, setActive, isDark, favorites, toggleFavorite, user,
 
   // categories definition removed to avoid duplication
 
+  const [showChannelSelector, setShowChannelSelector] = useState<{ idx: number } | null>(null);
+  const [channelSearch, setChannelSearch] = useState("");
+
+  const filteredMultiviewChannels = channels.filter(c => 
+    c.name.toLowerCase().includes(channelSearch.toLowerCase()) ||
+    c.category.toLowerCase().includes(channelSearch.toLowerCase())
+  );
+
   return (
     <div className="flex-1 p-4 md:p-6 overflow-y-auto">
+      {/* Liquid Modal for Channel Selection */}
+      <LiquidModal
+        isOpen={!!showChannelSelector}
+        onClose={() => { setShowChannelSelector(null); setChannelSearch(""); }}
+        isDark={isDark}
+        title="Chọn kênh Multiview"
+        description="Tìm kiếm và chọn kênh truyền hình bạn muốn thêm vào lưới Multiview"
+        liquidGlass={liquidGlass}
+      >
+        <div className="space-y-6">
+          <div className={`relative group flex items-center gap-3 px-4 py-4 rounded-2xl overflow-hidden transition-all ${isDark ? "bg-white/5" : "bg-slate-100"}`}>
+            <Search size={18} className="text-slate-500 group-focus-within:text-purple-500 transition-colors" />
+            <input 
+              type="text"
+              placeholder="Tìm tên kênh hoặc thể loại..."
+              value={channelSearch}
+              onChange={(e) => setChannelSearch(e.target.value)}
+              className={`bg-transparent border-none outline-none text-sm font-bold w-full placeholder-slate-500 ${isDark ? "text-white" : "text-slate-900"}`}
+            />
+            <div className={`absolute bottom-0 left-0 h-[2px] w-full transition-all duration-300 ${isDark ? "bg-white/10" : "bg-slate-200"} group-focus-within:bg-purple-500 group-focus-within:shadow-[0_0_10px_rgba(168,85,247,0.5)]`} />
+          </div>
+
+          <div className="max-h-[350px] overflow-y-auto px-1 space-y-2 custom-scrollbar pr-2">
+            {filteredMultiviewChannels.length > 0 ? (
+              filteredMultiviewChannels.map(c => (
+                <button
+                  key={c.name}
+                  onClick={() => {
+                    if (showChannelSelector) {
+                      setMultiviewChannels(prev => {
+                        const next = [...prev];
+                        next[showChannelSelector.idx] = c;
+                        return next;
+                      });
+                      setShowChannelSelector(null);
+                      setChannelSearch("");
+                    }
+                  }}
+                  className={`w-full flex items-center gap-4 p-3 rounded-[20px] transition-all group ${isDark ? "hover:bg-white/5 text-white" : "hover:bg-slate-100 text-slate-900"}`}
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center p-2 border ${isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200"}`}>
+                    <img src={c.logo} alt={c.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="font-bold text-sm leading-tight uppercase tracking-tight">{c.name}</p>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{c.category}</p>
+                  </div>
+                  <div className="p-2 rounded-full bg-purple-500/10 text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <LogIn size={16} />
+                  </div>
+                </button>
+              ))
+            ) : (
+              <div className="py-20 text-center space-y-4">
+                <div className="inline-flex p-4 rounded-full bg-slate-500/10 text-slate-500">
+                  <Search size={32} />
+                </div>
+                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">Không tìm thấy kênh nào</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </LiquidModal>
+
       {/* VIDEO PLAYER */}
-      <div className={`aspect-video bg-black mb-6 flex items-center justify-center border shadow-2xl relative overflow-hidden group ${
+      <div className={`bg-black mb-6 flex items-center justify-center border shadow-2xl relative overflow-hidden group ${
+        isMultiview ? "aspect-auto min-h-[400px]" : "aspect-video"
+      } ${
         liquidGlass ? "rounded-2xl" : "rounded-lg"
       } ${isDark ? "border-slate-800" : "border-slate-300"}`}>
         {!user && !isDev ? (
@@ -923,6 +1117,74 @@ function TVContent({ active, setActive, isDark, favorites, toggleFavorite, user,
                 Đăng nhập ngay
               </button>
             </motion.div>
+          </div>
+        ) : isMultiview ? (
+          <div className={`w-full h-full grid gap-2 p-2 ${
+            multiviewCount <= 2 ? "grid-cols-2" : 
+            multiviewCount <= 4 ? "grid-cols-2" : 
+            "grid-cols-3"
+          }`}>
+            {multiviewChannels.map((ch, idx) => (
+              <div key={idx} className="relative aspect-video bg-slate-900 rounded-lg overflow-hidden border border-white/5 group/slot">
+                {ch ? (
+                  <IndividualPlayer 
+                    channel={ch} 
+                    isMuted={multiviewVolumes[idx] === 0 || multiviewVolumes[idx] === undefined} 
+                    volume={multiviewVolumes[idx] ?? 0}
+                    isDark={isDark}
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-slate-500">
+                    <div className="p-4 rounded-full bg-white/5 border border-white/5">
+                      <Tv size={32} />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Trống</span>
+                  </div>
+                )}
+                
+                {/* Individual Control Bar */}
+                <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/slot:opacity-100 transition-opacity flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 truncate">
+                    {ch && <img src={ch.logo} className="w-4 h-4 object-contain" />}
+                    <span className="text-[10px] font-black text-white truncate">{ch?.name || "Chọn kênh"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Volume2 size={12} className="text-white opacity-60" />
+                    <input 
+                      type="range" min="0" max="1" step="0.1" 
+                      value={multiviewVolumes[idx] ?? 0}
+                      onChange={(e) => {
+                        const v = parseFloat(e.target.value);
+                        setMultiviewVolumes(prev => ({ ...prev, [idx]: v }));
+                      }}
+                      className="w-12 h-1 bg-white/20 rounded-full appearance-none accent-purple-500"
+                    />
+                    <button 
+                      onClick={() => setMultiviewChannels(prev => {
+                        const next = [...prev];
+                        next[idx] = null;
+                        return next;
+                      })}
+                      className="p-1 rounded bg-red-500/20 text-red-500 hover:bg-red-500/40"
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Slot Action Button (if empty) */}
+                {!ch && (
+                   <div className="absolute inset-0 z-10 flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity">
+                      <button 
+                        onClick={() => setShowChannelSelector({ idx })}
+                        className="px-6 py-2.5 bg-white text-black rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:scale-110 active:scale-95 transition-all"
+                      >
+                        Chọn kênh
+                      </button>
+                   </div>
+                )}
+              </div>
+            ))}
           </div>
         ) : (
           <>
@@ -1074,6 +1336,63 @@ function TVContent({ active, setActive, isDark, favorites, toggleFavorite, user,
                       </div>
 
                       <div className="flex items-center gap-4">
+                          {featureFlags.multiview_experimental && (
+                            <div className="relative">
+                              <button 
+                                onClick={() => setShowLayoutMenu(!showLayoutMenu)}
+                                className={`p-4 rounded-2xl border transition-all ${
+                                  isMultiview
+                                    ? "bg-purple-600 border-purple-500 text-white shadow-lg"
+                                    : liquidGlass === "tinted" ? "bg-black/5 border-black/10 text-black" : "bg-white/5 border-white/10 text-white"
+                                }`}
+                                title="Multiview"
+                              >
+                                <LayoutGrid size={20} />
+                              </button>
+                              <AnimatePresence>
+                                {showLayoutMenu && (
+                                  <motion.div 
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    className={`absolute bottom-full mb-4 right-0 min-w-[220px] border shadow-2xl z-50 p-6 space-y-6 ${
+                                      isDark ? "bg-slate-900 border-white/10" : "bg-white border-slate-200"
+                                    } ${liquidGlass ? "rounded-[32px] backdrop-blur-3xl" : "rounded-2xl"}`}
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? "text-white/40" : "text-slate-500"}`}>Enable Multiview</span>
+                                      <button 
+                                        onClick={toggleMultiview}
+                                        className={`w-12 h-6 rounded-full transition-all relative ${isMultiview ? "bg-purple-600" : "bg-slate-700"}`}
+                                      >
+                                        <motion.div 
+                                          animate={{ x: isMultiview ? 26 : 4 }}
+                                          className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm"
+                                        />
+                                      </button>
+                                    </div>
+                                    <div className="space-y-3">
+                                      <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? "text-white/40" : "text-slate-500"}`}>Grid Layout</span>
+                                      <div className="grid grid-cols-4 gap-2">
+                                        {[2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+                                          <button 
+                                            key={n}
+                                            onClick={() => {
+                                              setMultiviewCount(n);
+                                              if (!isMultiview) setIsMultiview(true);
+                                            }}
+                                            className={`p-2 rounded-xl text-xs font-black transition-all ${multiviewCount === n ? "bg-purple-600 text-white shadow-lg" : "bg-white/5 text-white/60 hover:bg-white/10"}`}
+                                          >
+                                            {n}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          )}
                           <button 
                             onClick={() => toggleFavorite(active)}
                             className={`p-4 rounded-2xl border transition-all ${
@@ -1119,6 +1438,19 @@ function TVContent({ active, setActive, isDark, favorites, toggleFavorite, user,
         </div>
         
         <div className="flex items-center gap-3">
+           {featureFlags.multiview_experimental && (
+             <button 
+               onClick={toggleMultiview}
+               className={`flex items-center gap-2 px-6 py-3 rounded-2xl border transition-all font-black text-[10px] uppercase tracking-widest ${
+                 isMultiview
+                   ? "bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20"
+                   : isDark ? "bg-white/5 border-white/10 text-white hover:bg-white/10" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm"
+               }`}
+             >
+               <LayoutGrid size={14} />
+               {isMultiview ? "Thoát Multiview" : "Multiview"}
+             </button>
+           )}
            <button 
              onClick={() => toggleFavorite(active)}
              className={`flex items-center gap-2 px-6 py-3 rounded-2xl border transition-all font-black text-[10px] uppercase tracking-widest ${
@@ -1557,40 +1889,227 @@ function AdminContent({ isDark, liquidGlass }: { isDark: boolean, liquidGlass: "
 }
 
 
+function UpdateLogsContent({ isDark, onBack }: { isDark: boolean, onBack: () => void }) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [logSearchQuery, setLogSearchQuery] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 space-y-4">
+        <img 
+          src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
+          alt="Loading" 
+          className={`w-12 h-12 ${isDark ? "filter brightness-0 invert" : ""}`}
+        />
+        <span className={`text-[10px] font-semibold uppercase tracking-[0.3em] ${isDark ? "text-white/40" : "text-slate-400"}`}>
+          Đang tải dữ liệu...
+        </span>
+      </div>
+    );
+  }
+
+  const logs = [
+    {
+      id: 'dev-26470',
+      version: 'Vplay Dev - Build 26470',
+      tag: '🐱',
+      type: 'Phiên bản lập trình viên',
+      sections: [
+        {
+          title: '🎨 USER INTERFACE',
+          items: [
+            'Cập nhật lại sidebar: Đối với máy tính hoặc máy tính bảng, sidebar có thiết kế "lơ lửng" và blur nhẹ / Đối với thiết bị di động, khi bật Desktop Interface cũng có thể sử dụng được sidebar ẩn dưới dạng hamburger menu',
+            'Cập nhật lại trang settings',
+            'Cập nhật logo Vplay',
+            'Sidebar search đã hoạt động trở lại',
+            'LTR sidebar và Channel pinning (chỉ cho Desktop Interface) chính thức roll-out, ko còn nằm trong Feature Flag'
+          ],
+          color: 'text-purple-500'
+        },
+        {
+          title: '🚩 FEATURES FLAG',
+          items: [
+            'Giờ nằm trực tiếp dưới cuối cùng của trang settings',
+            'Đã thêm lại flag "Multiview" (multiview_experimental): Xem nhiều kênh truyền hình cùng một thời điểm',
+            'Đã thêm flag "Reduce Animation" (disable_animation): Giảm thiểu hiệu ứng chuyển đổng trên trang web. Thích hợp cho các thiết bị yếu'
+          ],
+          color: 'text-amber-500'
+        }
+      ]
+    },
+    {
+      id: 'canary-28000',
+      version: 'Vplay Canary - Build 28000',
+      tag: '🐦',
+      type: 'Phiên bản thử nghiệm sớm',
+      content: 'Bản build chỉ mới được để cập thông qua Github'
+    }
+  ];
+
+  const filteredLogs = logs.filter(log => 
+    log.version.toLowerCase().includes(logSearchQuery.toLowerCase()) ||
+    log.type.toLowerCase().includes(logSearchQuery.toLowerCase()) ||
+    log.sections?.some(s => s.items.some(i => i.toLowerCase().includes(logSearchQuery.toLowerCase()))) ||
+    (log.content && log.content.toLowerCase().includes(logSearchQuery.toLowerCase()))
+  );
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-12 max-w-4xl mx-auto w-full pb-32">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={onBack}
+            className={`p-2 rounded-xl transition-all ${isDark ? "bg-white/5 hover:bg-white/10 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-900"}`}
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h2 className={`text-3xl font-semibold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Update Logs</h2>
+        </div>
+
+          <div className={`relative group min-w-[240px] rounded-xl overflow-hidden ${isDark ? "bg-white/5" : "bg-slate-50"}`}>
+            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 ${isDark ? "text-white/20" : "text-slate-400"} group-focus-within:text-purple-500 transition-colors`} size={14} />
+            <input 
+              value={logSearchQuery}
+              onChange={e => setLogSearchQuery(e.target.value)}
+              placeholder="Tìm kiếm phiên bản..."
+              className={`w-full pl-9 pr-4 py-2.5 text-xs bg-transparent focus:outline-none transition-all ${
+                isDark ? "text-white placeholder-white/20" : "text-slate-900 placeholder-slate-400"
+              }`}
+            />
+            <div className={`absolute bottom-0 left-0 h-[2px] w-full transition-all duration-300 ${isDark ? "bg-white/10" : "bg-slate-200"} group-focus-within:bg-purple-500 group-focus-within:shadow-[0_0_8px_rgba(168,85,247,0.4)]`} />
+          </div>
+      </div>
+
+      <div className="space-y-16">
+        {filteredLogs.length > 0 ? filteredLogs.map((log) => (
+          <section key={log.id} className="space-y-6">
+            <div className="flex items-center gap-3">
+               <div className={`w-10 h-10 rounded-2xl ${log.id.includes('dev') ? 'bg-green-500/10 text-green-500' : 'bg-yellow-500/10 text-yellow-500'} flex items-center justify-center`}>
+                 <span className="text-xl">{log.tag}</span>
+               </div>
+               <div>
+                 <h3 className={`text-xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{log.version}</h3>
+                 <p className="text-xs text-slate-500 font-medium uppercase tracking-widest">{log.type}</p>
+               </div>
+            </div>
+            
+            {log.sections ? (
+              <div className={`p-6 md:p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200"} space-y-8`}>
+                {log.sections.map((section, idx) => (
+                  <div key={idx} className="space-y-4">
+                    <h4 className={`text-xs font-black ${section.color} uppercase tracking-[0.2em]`}>{section.title}</h4>
+                    <ul className={`text-sm space-y-3 ${isDark ? "text-slate-300" : "text-slate-600"} font-medium`}>
+                      {section.items.map((item, iIdx) => (
+                        <li key={iIdx} className="flex gap-2">
+                          <span className={`mt-1.5 h-1 w-1 rounded-full bg-current shrink-0 ${section.color}`} />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={`p-6 md:p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200"}`}>
+                <p className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"} font-medium`}>
+                  {log.content}
+                </p>
+              </div>
+            )}
+          </section>
+        )) : (
+          <div className="p-12 text-center text-slate-500 text-[10px] font-semibold uppercase tracking-[0.3em]">
+            Không tìm thấy phiên bản phù hợp
+          </div>
+        )}
+
+        {/* Phân chia kênh BETA */}
+        {logSearchQuery === "" && (
+          <section className="space-y-6">
+            <div className="flex items-center gap-3 px-1">
+               <h3 className={`text-sm font-black uppercase tracking-[0.2em] ${isDark ? "text-white/40" : "text-slate-400"}`}>PHÂN CHIA KÊNH BETA MỚI</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className={`p-6 rounded-3xl border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100 shadow-sm"} space-y-3`}>
+                <div className="flex items-center gap-2 text-green-500">
+                  <div className="w-2 h-2 rounded-full bg-current" />
+                  <span className="text-xs font-bold uppercase tracking-widest">Vplay Dev</span>
+                </div>
+                <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} leading-relaxed font-medium`}>
+                  Thử nghiệm, vẫn khá lỗi nhưng giảm đáng kể và tính năng hoàn thiện hơn so với Canary. Được cập nhật thường xuyên, các tính năng Canary đã ổn định và sẵn sàng sẽ được đưa vào dưới Feature Flag. Số build thấp hơn Canary
+                </p>
+              </div>
+              <div className={`p-6 rounded-3xl border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100 shadow-sm"} space-y-3`}>
+                <div className="flex items-center gap-2 text-yellow-500">
+                  <div className="w-2 h-2 rounded-full bg-current" />
+                  <span className="text-xs font-bold uppercase tracking-widest">Vplay Canary</span>
+                </div>
+                <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} leading-relaxed font-medium`}>
+                  Thử nghiệm, nhiều lỗi và các thứ lặt vặt, tính năng test sơ sài, có thể hỏng hoặc crash. Không được cập nhật thường xuyên, chỉ sử dụng cho mục đích test. Số build cao hơn Dev
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SettingsContent({ 
   isDark, 
   setIsDark, 
   isDev, 
   setIsDev, 
+  featureFlags,
+  setFeatureFlags,
   liquidGlass, 
   setLiquidGlass,
   useSidebar,
   setUseSidebar,
+  isSidebarRight,
+  setIsSidebarRight,
+  isPinningEnabled,
+  setIsPinningEnabled,
   user,
   userData,
   setUserData,
   onAlert,
   onLogin,
+  onUpdateLogsClick,
   favorites
 }: { 
   isDark: boolean, 
   setIsDark: (val: boolean) => void, 
   isDev: boolean, 
   setIsDev: (val: boolean) => void,
+  featureFlags: { [key: string]: boolean },
+  setFeatureFlags: (val: { [key: string]: boolean } | ((prev: { [key: string]: boolean }) => { [key: string]: boolean })) => void,
   liquidGlass: "glassy" | "tinted",
   setLiquidGlass: (val: "glassy" | "tinted") => void,
   useSidebar: boolean,
   setUseSidebar: (val: boolean) => void,
+  isSidebarRight: boolean,
+  setIsSidebarRight: (val: boolean) => void,
+  isPinningEnabled: boolean,
+  setIsPinningEnabled: (val: boolean) => void,
   user: FirebaseUser | null,
   userData: any,
   setUserData: any,
   onAlert: (title: string, msg: string) => void,
   onLogin: () => void,
+  onUpdateLogsClick: () => void,
   favorites: string[]
 }) {
   const [name, setName] = useState(userData?.displayName || user?.displayName || "");
   const [avatar, setAvatar] = useState(userData?.photoURL || user?.photoURL || "");
   const [saving, setSaving] = useState(false);
+  const [flagSearch, setFlagSearch] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -1662,64 +2181,215 @@ function SettingsContent({
     setSaving(false);
   };
 
+  const toggleFlag = (id: string) => {
+    setFeatureFlags(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   return (
-    <div className="flex flex-col lg:flex-row gap-8 pb-32 items-stretch lg:items-start max-w-6xl mx-auto px-4 md:px-6">
-      {/* Left Column - Main Settings */}
-      <div className="flex-1 space-y-8">
-        {/* Version Info Section */}
-        <div className={`p-8 rounded-[40px] border flex flex-col transition-all ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-500">
-                <Info size={24} />
+    <div className="max-w-6xl mx-auto px-4 md:px-6 pb-32 space-y-8">
+      <div className="flex flex-col lg:flex-row gap-8 items-stretch lg:items-start">
+        {/* Left Column - Main Settings */}
+        <div className="flex-1 space-y-8">
+          {/* Version Info Section */}
+          <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
+            <div className="flex flex-col items-center justify-center text-center gap-4 mb-8">
+              <div className="space-y-4">
+                <div className="flex items-center justify-center gap-3">
+                  <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500">
+                    <Info size={20} />
+                  </div>
+                  <h3 className={`font-semibold text-2xl tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Thông tin</h3>
+                </div>
               </div>
-              <div>
-                <h3 className={`font-black text-xl tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Thông tin cộng đồng</h3>
-                <p className="text-xs text-slate-500 font-medium tracking-wide uppercase mt-0.5">Software & Versioning</p>
+              <img 
+                src="https://static.wikia.nocookie.net/ftv/images/d/d9/SMR26.png/revision/latest/scale-to-width-down/1000?cb=20260427024320&path-prefix=vi" 
+                alt="SMR26 Logo" 
+                className="h-32 w-auto object-contain drop-shadow-2xl"
+                referrerPolicy="no-referrer"
+              />
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-4xl font-semibold tracking-tighter bg-gradient-to-r from-purple-500 via-pink-400 to-amber-400 bg-clip-text text-transparent uppercase">
+                  Summer 2026 Update
+                </p>
+                <div className="h-1.5 w-32 bg-gradient-to-r from-purple-500 via-pink-500 to-transparent rounded-full" />
               </div>
-            </div>
-            <img 
-              src="https://static.wikia.nocookie.net/ftv/images/d/d9/SMR26.png/revision/latest/scale-to-width-down/1000?cb=20260427024320&path-prefix=vi" 
-              alt="SMR26 Logo" 
-              className="h-12 w-auto object-contain drop-shadow-xl"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-          
-          <div className="space-y-6">
-            <div className="flex flex-col gap-2">
-               <p className={`text-2xl font-black tracking-tighter ${isDark ? "text-white" : "text-slate-900"}`}>
-                 Vplay <span className="text-purple-500 uppercase">Summer 2026 Update</span>
-               </p>
-               <div className="h-1.5 w-24 bg-gradient-to-r from-purple-500 to-transparent rounded-full" />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div className={`p-5 rounded-3xl border flex flex-col gap-2 ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200"}`}>
-                <span className={`text-[10px] font-black uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Version</span>
-                <span className={`text-lg font-mono font-black ${isDark ? "text-green-400" : "text-green-600"}`}>SMR26</span>
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className={`p-6 rounded-[32px] border flex flex-col items-center gap-2 ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200 shadow-sm"}`}>
+                  <span className={`text-[10px] font-black uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Version</span>
+                  <span className={`text-xl font-mono font-black ${isDark ? "text-green-400" : "text-green-600"}`}>SMR26 Dev</span>
+                </div>
+                <div className={`p-6 rounded-[32px] border flex flex-col items-center gap-2 ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200 shadow-sm"}`}>
+                  <span className={`text-[10px] font-black uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Build</span>
+                  <span className={`text-xl font-mono font-black ${isDark ? "text-yellow-400" : "text-yellow-600"}`}>26470</span>
+                </div>
+                <div className={`p-6 rounded-[32px] border flex flex-col items-center gap-2 ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200 shadow-sm"}`}>
+                  <span className={`text-[10px] font-black uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Status</span>
+                  <span className={`text-xl font-mono font-black ${isDark ? "text-cyan-400" : "text-cyan-600"}`}>DEV</span>
+                </div>
               </div>
-              <div className={`p-5 rounded-3xl border flex flex-col gap-2 ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200"}`}>
-                <span className={`text-[10px] font-black uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Build</span>
-                <span className={`text-lg font-mono font-black ${isDark ? "text-yellow-400" : "text-yellow-600"}`}>26467</span>
-              </div>
+
+              <button 
+                onClick={onUpdateLogsClick}
+                className="w-full py-4 rounded-3xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm transition-all flex items-center justify-center gap-3 shadow-lg shadow-purple-600/20 active:scale-95"
+              >
+                <Clock size={18} />
+                UPDATE LOGS
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Appearance & Experience */}
-        <div className={`p-8 rounded-[40px] border flex flex-col transition-all ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
-          <div className="flex items-center gap-4 mb-8">
-            <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-500">
-              <Palette size={24} />
+        {/* Right Column */}
+        <div className="flex-1 flex flex-col gap-6">
+          {/* Profile Section */}
+          <div className={`p-6 rounded-3xl border flex flex-col ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 rounded-xl bg-purple-500/20 text-purple-500">
+                <User size={20} />
+              </div>
+              <h3 className={`font-bold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>Hồ sơ</h3>
             </div>
-            <div>
-              <h3 className={`font-black text-xl tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Giao diện & Trải nghiệm</h3>
-              <p className="text-xs text-slate-500 font-medium tracking-wide uppercase mt-0.5">Customize your view</p>
-            </div>
+
+            {!user ? (
+              <div className="flex flex-col items-center justify-center text-center gap-4 py-2">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center border-2 ${isDark ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"}`}>
+                  <User className="w-8 h-8 text-slate-400" />
+                </div>
+                <p className="text-xs text-slate-500 font-medium">Đăng nhập để đồng bộ dữ liệu</p>
+                <button 
+                  onClick={onLogin}
+                  className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-2xl transition-all shadow-lg text-sm"
+                >
+                  Đăng nhập ngay
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex items-center gap-5">
+                  <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                    {avatar ? (
+                      <img src={avatar} alt="Avatar" className="w-16 h-16 rounded-full object-cover border-2 border-purple-500/30" />
+                    ) : (
+                      <div className={`w-16 h-16 rounded-full flex items-center justify-center border-2 ${isDark ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"}`}>
+                        <User className="w-8 h-8 text-slate-400" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      <Camera className="text-white w-4 h-4" />
+                    </div>
+                    <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+                  </div>
+                  
+                  <div className="flex-1 space-y-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest opacity-30 ml-1">Tên hiển thị</label>
+                      <input 
+                        value={name} 
+                        onChange={e => setName(e.target.value)} 
+                        placeholder="Tên của bạn..."
+                        className={`w-full px-4 py-2 text-sm border focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all rounded-xl ${
+                          isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"
+                        }`} 
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={handleSave} 
+                        disabled={saving}
+                        className="flex-1 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl disabled:opacity-50 transition-all text-xs"
+                      >
+                        {saving ? "..." : "Lưu"}
+                      </button>
+                      <button 
+                        onClick={() => signOut(auth)}
+                        className={`p-2 rounded-xl border transition-all ${isDark ? "bg-red-500/10 border-red-500/20 text-red-500" : "bg-red-50 border-red-200 text-red-600"}`}
+                      >
+                        <LogOut size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="space-y-6">
+          {/* System Info */}
+          <div className={`p-6 rounded-3xl border flex flex-col justify-between ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-slate-500/20 text-slate-400">
+                    <Info size={20} />
+                  </div>
+                  <div>
+                    <h3 className={`font-bold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>Cộng đồng</h3>
+                    <p className="text-[10px] opacity-50 font-mono">vDev.26415</p>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <div className="px-2 py-0.5 rounded bg-yellow-400 text-[10px] font-black text-black">PREVIEW</div>
+                  <p className="text-[8px] opacity-40 font-bold uppercase tracking-tighter">OTA System</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className={`text-xs font-bold uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Ủng hộ chúng tôi</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[1, 2, 3, 4].map(num => (
+                    <a 
+                      key={num}
+                      href={`https://www.youtube.com/@ota${num === 1 ? 'one' : num === 2 ? 'two' : num === 3 ? 'three' : 'four'}fr253`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className={`flex items-center gap-2 p-2 rounded-xl border text-[10px] font-bold transition-all ${
+                        isDark ? "bg-white/5 border-white/5 hover:bg-white/10 text-slate-300" : "bg-slate-50 border-slate-100 hover:bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      <div className="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center text-white">
+                        <Play size={8} fill="currentColor" />
+                      </div>
+                      Youtube #{num}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-white/5 space-y-4">
+              <div className={`p-3 rounded-xl border ${isDark ? "bg-red-500/5 border-red-500/10" : "bg-red-50 border-red-100"}`}>
+                <p className="text-[10px] font-bold text-red-500 mb-1 uppercase tracking-wider">Firebase Debug</p>
+                <p className="text-[9px] opacity-70 mb-2">Nếu đăng nhập không hoạt động, hãy đảm bảo bạn đã bật "Email/Password" và "Google" trong Firebase Console.</p>
+                <a 
+                  href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication/providers`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[9px] font-bold text-purple-500 hover:underline flex items-center gap-1"
+                >
+                  Mở Firebase Console <ExternalLink size={8} />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Appearance & Experience - Full Width */}
+      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
+        <div className="flex items-center gap-4 mb-8">
+          <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-500">
+            <Palette size={24} />
+          </div>
+          <div>
+            <h3 className={`font-semibold text-xl tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Giao diện & Trải nghiệm</h3>
+            <p className="text-xs text-slate-500 font-medium tracking-wide uppercase mt-0.5">Customize your view</p>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-8">
             <div className="space-y-3">
               <div className="flex items-center gap-2 px-1">
                 <Sun size={14} className="text-amber-500" />
@@ -1776,175 +2446,131 @@ function SettingsContent({
                   onClick={() => !useSidebar && setLiquidGlass("glassy")}
                   className={`p-4 rounded-2xl border transition-all flex flex-col gap-2 ${liquidGlass === "glassy" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : isDark ? "bg-white/5 border-white/10 text-slate-400" : "bg-slate-50 border-slate-200 text-slate-600"}`}
                 >
-                  <div className="h-5 w-5 rounded-full border-2 border-current border-dashed" />
+                  <Droplet size={20} className={liquidGlass === "glassy" ? "text-white" : "text-slate-400"} />
                   <span className="text-xs font-bold text-left">Glassy</span>
                 </button>
                 <button 
                   onClick={() => !useSidebar && setLiquidGlass("tinted")}
                   className={`p-4 rounded-2xl border transition-all flex flex-col gap-2 ${liquidGlass === "tinted" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : isDark ? "bg-white/5 border-white/10 text-slate-400" : "bg-slate-50 border-slate-200 text-slate-600"}`}
                 >
-                  <div className="h-5 w-5 rounded-full bg-current opacity-40" />
+                  <div className="w-5 h-5 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-teal-500" />
+                  </div>
                   <span className="text-xs font-bold text-left">Tinted</span>
                 </button>
               </div>
             </div>
+
+            {useSidebar && (
+              <>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 px-1">
+                    <Layout size={14} className="text-indigo-500" />
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-40">LTR Sidebar</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button 
+                      onClick={() => setIsSidebarRight(false)}
+                      className={`p-4 rounded-2xl border transition-all flex flex-col gap-2 ${!isSidebarRight ? "bg-purple-600 border-purple-500 text-white shadow-lg" : isDark ? "bg-white/5 border-white/10 text-slate-400" : "bg-slate-50 border-slate-200 text-slate-600"}`}
+                    >
+                      <Layout size={20} className={!isSidebarRight ? "text-white" : "text-slate-400"} />
+                      <span className="text-xs font-bold text-left">Trái</span>
+                    </button>
+                    <button 
+                      onClick={() => setIsSidebarRight(true)}
+                      className={`p-4 rounded-2xl border transition-all flex flex-col gap-2 ${isSidebarRight ? "bg-purple-600 border-purple-500 text-white shadow-lg" : isDark ? "bg-white/5 border-white/10 text-slate-400" : "bg-slate-50 border-slate-200 text-slate-600"}`}
+                    >
+                      <Layout size={20} className={isSidebarRight ? "text-white shadow-[-4px_0_0_currentColor]" : "text-slate-400"} />
+                      <span className="text-xs font-bold text-left">Phải</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 px-1">
+                    <Pin size={14} className="text-pink-500" />
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Channel Pinning</span>
+                  </div>
+                  <button 
+                    onClick={() => setIsPinningEnabled(!isPinningEnabled)}
+                    className={`w-full p-4 rounded-2xl border transition-all flex items-center justify-between ${isPinningEnabled ? "bg-purple-600 border-purple-500 text-white shadow-lg" : isDark ? "bg-white/5 border-white/10 text-slate-400" : "bg-slate-50 border-slate-200 text-slate-600"}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Pin size={20} className={isPinningEnabled ? "text-white" : "text-slate-400"} />
+                      <span className="text-xs font-bold">Hiện lối tắt kênh yêu thích trên sidebar</span>
+                    </div>
+                    <div className={`w-10 h-5 rounded-full relative transition-colors ${isPinningEnabled ? "bg-white/20" : "bg-slate-700"}`}>
+                       <motion.div 
+                        animate={{ x: isPinningEnabled ? 22 : 4 }}
+                        className={`absolute top-1 w-3 h-3 rounded-full ${isPinningEnabled ? "bg-white" : "bg-slate-400"}`}
+                       />
+                    </div>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Right Column */}
-      <div className="flex-1 flex flex-col gap-6">
-        {/* Profile Section */}
-        <div className={`p-6 rounded-3xl border flex flex-col ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 rounded-xl bg-purple-500/20 text-purple-500">
-              <User size={20} />
-            </div>
-            <h3 className={`font-bold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>Hồ sơ</h3>
-          </div>
-
-          {!user ? (
-            <div className="flex flex-col items-center justify-center text-center gap-4 py-2">
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center border-2 ${isDark ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"}`}>
-                <User className="w-8 h-8 text-slate-400" />
-              </div>
-              <p className="text-xs text-slate-500 font-medium">Đăng nhập để đồng bộ dữ liệu</p>
-              <button 
-                onClick={onLogin}
-                className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-2xl transition-all shadow-lg text-sm"
-              >
-                Đăng nhập ngay
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="flex items-center gap-5">
-                <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                  {avatar ? (
-                    <img src={avatar} alt="Avatar" className="w-16 h-16 rounded-full object-cover border-2 border-purple-500/30" />
-                  ) : (
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center border-2 ${isDark ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"}`}>
-                      <User className="w-8 h-8 text-slate-400" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <Camera className="text-white w-4 h-4" />
-                  </div>
-                  <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-                </div>
-                
-                <div className="flex-1 space-y-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase tracking-widest opacity-30 ml-1">Tên hiển thị</label>
-                    <input 
-                      value={name} 
-                      onChange={e => setName(e.target.value)} 
-                      placeholder="Tên của bạn..."
-                      className={`w-full px-4 py-2 text-sm border focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all rounded-xl ${
-                        isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"
-                      }`} 
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={handleSave} 
-                      disabled={saving}
-                      className="flex-1 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl disabled:opacity-50 transition-all text-xs"
-                    >
-                      {saving ? "..." : "Lưu"}
-                    </button>
-                    <button 
-                      onClick={() => signOut(auth)}
-                      className={`p-2 rounded-xl border transition-all ${isDark ? "bg-red-500/10 border-red-500/20 text-red-500" : "bg-red-50 border-red-200 text-red-600"}`}
-                    >
-                      <LogOut size={16} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Favorites Section */}
-        <div className={`p-6 rounded-3xl border flex items-center justify-between ${!useSidebar ? "opacity-30 grayscale cursor-not-allowed" : ""} ${isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"}`} onClick={() => {
-          if (useSidebar) {
-            onAlert("Yêu thích", "Bạn có thể quản lý danh sách yêu thích tại trang chủ.");
-          }
-        }}>
+      {/* Features Flag Section - Spanning both columns */}
+      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-500">
-               <Heart size={20} fill={useSidebar ? "currentColor" : "none"} />
+            <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-500">
+              <Flask size={24} />
             </div>
             <div>
-              <p className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>Kênh yêu thích</p>
-              <p className="text-[10px] text-slate-500">Xem danh sách kênh đã lưu</p>
+              <h3 className={`font-semibold text-xl tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Features Flag</h3>
+              <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} font-medium`}>Kích hoạt và trải nghiệm sớm các tính năng sắp ra mắt của Vplay</p>
             </div>
           </div>
-          <ChevronRight size={20} className="text-slate-400" />
+          <div className={`relative group min-w-[240px] rounded-xl overflow-hidden ${isDark ? "bg-white/5" : "bg-slate-50"}`}>
+            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 ${isDark ? "text-white/20" : "text-slate-400"} group-focus-within:text-purple-500 transition-colors`} size={14} />
+            <input 
+              value={flagSearch}
+              onChange={e => setFlagSearch(e.target.value)}
+              placeholder="Tìm kiếm tính năng..."
+              className={`w-full pl-9 pr-4 py-2 text-xs bg-transparent focus:outline-none transition-all ${
+                isDark ? "text-white placeholder-white/20" : "text-slate-900 placeholder-slate-400"
+              }`}
+            />
+            <div className={`absolute bottom-0 left-0 h-[2px] w-full transition-all duration-300 ${isDark ? "bg-white/10" : "bg-slate-200"} group-focus-within:bg-purple-500 group-focus-within:shadow-[0_0_8px_rgba(168,85,247,0.4)]`} />
+          </div>
         </div>
 
-        {/* System Info */}
-        <div className={`p-6 rounded-3xl border flex flex-col justify-between ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-slate-500/20 text-slate-400">
-                  <Info size={20} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {([
+            { id: 'multiview_experimental', name: 'Multiview', desc: 'Xem nhiều kênh truyền hình cùng một lúc', active: featureFlags.multiview_experimental },
+            { id: 'disable_animation', name: 'Reduce Animation', desc: 'Giảm hiệu ứng chuyển động trên trang web. Thích hợp cho các thiết bị yếu', active: featureFlags.disable_animation }
+          ].filter(f => f.name.toLowerCase().includes(flagSearch.toLowerCase()) || f.desc.toLowerCase().includes(flagSearch.toLowerCase()) || f.id.toLowerCase().includes(flagSearch.toLowerCase())).map(flag => (
+                    <div key={flag.id} className={`p-5 md:p-6 rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200"}`}>
+              <div className="space-y-2 pr-4 min-w-0 flex-1">
+                <div className="space-y-1">
+                <h4 className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{flag.name}</h4>
+                  <div className="flex flex-col gap-1">
+                    <span className={`inline-flex px-2 py-0.5 rounded-md text-[11px] font-bold font-mono tracking-tight w-fit ${isDark ? "bg-yellow-400/10 text-yellow-400" : "bg-yellow-100 text-yellow-700"}`}>{flag.id}</span>
+                  </div>
                 </div>
-                <div>
-                  <h3 className={`font-bold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>Cộng đồng</h3>
-                  <p className="text-[10px] opacity-50 font-mono">vDev.26415</p>
-                </div>
+                <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} font-medium leading-relaxed`}>{flag.desc}</p>
               </div>
-              <div className="flex flex-col items-end gap-1">
-                <div className="px-2 py-0.5 rounded bg-yellow-400 text-[10px] font-black text-black">PREVIEW</div>
-                <p className="text-[8px] opacity-40 font-bold uppercase tracking-tighter">OTA System</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <p className={`text-xs font-bold uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Ủng hộ chúng tôi</p>
-              <div className="grid grid-cols-2 gap-2">
-                {[1, 2, 3, 4].map(num => (
-                  <a 
-                    key={num}
-                    href={`https://www.youtube.com/@ota${num === 1 ? 'one' : num === 2 ? 'two' : num === 3 ? 'three' : 'four'}fr253`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className={`flex items-center gap-2 p-2 rounded-xl border text-[10px] font-bold transition-all ${
-                      isDark ? "bg-white/5 border-white/5 hover:bg-white/10 text-slate-300" : "bg-slate-50 border-slate-100 hover:bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    <div className="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center text-white">
-                      <Play size={8} fill="currentColor" />
-                    </div>
-                    Youtube #{num}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-white/5 space-y-4">
-            <div className={`p-3 rounded-xl border ${isDark ? "bg-red-500/5 border-red-500/10" : "bg-red-50 border-red-100"}`}>
-              <p className="text-[10px] font-bold text-red-500 mb-1 uppercase tracking-wider">Firebase Debug</p>
-              <p className="text-[9px] opacity-70 mb-2">Nếu đăng nhập không hoạt động, hãy đảm bảo bạn đã bật "Email/Password" và "Google" trong Firebase Console.</p>
-              <a 
-                href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication/providers`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[9px] font-bold text-purple-500 hover:underline flex items-center gap-1"
+              <button 
+                onClick={() => toggleFlag(flag.id)}
+                className={`relative flex-shrink-0 w-14 h-7 rounded-full transition-all duration-300 ${flag.active ? "bg-purple-600 shadow-[0_0_15px_rgba(147,51,234,0.4)]" : "bg-slate-700 hover:bg-slate-600"}`}
               >
-                Mở Firebase Console <ExternalLink size={8} />
-              </a>
+                <motion.div 
+                  animate={{ x: flag.active ? 30 : 4 }}
+                  className="absolute top-1 w-5 h-5 rounded-full bg-white shadow-md"
+                />
+              </button>
             </div>
-          </div>
+          )))}
         </div>
       </div>
     </div>
   );
 }
+
 
 function AuthModal({ isOpen, onClose, isDark, liquidGlass, setIsDev, setUserData }: { isOpen: boolean, onClose: () => void, isDark: boolean, liquidGlass: "glassy" | "tinted", setIsDev: (v: boolean) => void, setUserData: (d: any) => void }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -2252,9 +2878,9 @@ function SearchBar({ isDark, query, setQuery, onClose, liquidGlass }: { isDark: 
   const textColor = isGlassy ? "text-white" : "text-black";
 
   return (
-    <div className="flex items-center gap-1 md:gap-4 px-0 md:px-6 py-2 h-14 md:h-16 w-full max-w-4xl">
+    <div className={`flex items-center gap-1 md:gap-4 px-0 md:px-6 py-2 h-14 md:h-16 w-full max-w-4xl relative group rounded-2xl overflow-hidden transition-all ${isGlassy ? "bg-white/5" : "bg-black/5"}`}>
       <div className="flex items-center gap-1 md:gap-2 flex-1">
-        <Search className={`h-6 w-6 ${iconColor} flex-shrink-0`} />
+        <Search className={`h-6 w-6 ${iconColor} flex-shrink-0 transition-colors group-focus-within:text-purple-500`} />
         <input
           ref={inputRef}
           type="text"
@@ -2264,6 +2890,7 @@ function SearchBar({ isDark, query, setQuery, onClose, liquidGlass }: { isDark: 
           className={`flex-1 bg-transparent border-none outline-none text-lg font-medium ${textColor} ${placeholderColor}`}
         />
       </div>
+      <div className={`absolute bottom-0 left-0 h-[2px] w-full transition-all duration-300 ${isGlassy ? "bg-white/20" : "bg-black/10"} group-focus-within:bg-purple-500 group-focus-within:shadow-[0_0_15px_rgba(168,85,247,0.6)]`} />
       <div className="flex items-center gap-4">
         <button 
           onClick={startVoiceSearch}
@@ -2324,11 +2951,43 @@ function App() {
   const [useSidebar, setUseSidebar] = useState(() => {
     return localStorage.getItem("vplay_sidebar") === "true";
   });
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isSidebarRight, setIsSidebarRight] = useState(() => {
+    return localStorage.getItem("vplay_sidebar_right") === "true";
+  });
+  const [isPinningEnabled, setIsPinningEnabled] = useState(() => {
+    return localStorage.getItem("vplay_pinning") === "true";
+  });
+
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(window.innerWidth >= 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("vplay_sidebar_right", isSidebarRight.toString());
+  }, [isSidebarRight]);
+
+  useEffect(() => {
+    localStorage.setItem("vplay_pinning", isPinningEnabled.toString());
+  }, [isPinningEnabled]);
   const [activeChannel, setActiveChannel] = useState(channels[0]);
   const [sortOrder, setSortOrder] = useState<"default" | "az" | "za">("default");
   const [slideIndex, setSlideIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [featureFlags, setFeatureFlags] = useState<{ [key: string]: boolean }>(() => {
+    const saved = localStorage.getItem("vplay_feature_flags");
+    return saved ? JSON.parse(saved) : { multiview_experimental: false, disable_animation: false };
+  });
+
+  useEffect(() => {
+    localStorage.setItem("vplay_feature_flags", JSON.stringify(featureFlags));
+  }, [featureFlags]);
 
   const paginate = (newDirection: number) => {
     setDirection(newDirection);
@@ -2356,6 +3015,28 @@ function App() {
   }, [activeTab]);
   const [isDark, setIsDark] = useState(true); // Default to dark for better gradient look
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<Channel[]>([]);
+
+  useEffect(() => {
+    if (searchQuery.trim().length > 0) {
+      setIsSearchLoading(true);
+      const timer = setTimeout(() => {
+        const query = searchQuery.toLowerCase().trim();
+        const filtered = channels.filter(ch => 
+          ch.name.toLowerCase().includes(query) || 
+          ch.category?.toLowerCase().includes(query)
+        );
+        setSearchResults(filtered);
+        setIsSearchLoading(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    } else {
+      setSearchResults([]);
+      setIsSearchLoading(false);
+    }
+  }, [searchQuery]);
+
   const [showDevSettings, setShowDevSettings] = useState(false);
   const [showDevPrompt, setShowDevPrompt] = useState(false);
   const [devPass, setDevPass] = useState("");
@@ -2492,26 +3173,30 @@ function App() {
     }
   };
 
-  const tabs = [...baseTabs];
-  if (isAdmin || isDev) {
-    tabs.push({ name: "Quản trị", icon: Shield, id: "Quản trị" });
-  }
+  const tabs = baseTabs.filter(t => {
+    if (t.id === "Quản trị" && !isDev && !isAdmin) return false;
+    return true;
+  });
 
   const displayTab = activeTab;
 
-  const handleEnterApp = () => {
+  const handleEnterApp = useCallback(() => {
     setShowSplash(false);
     // This empty play/pause logic unblocks audio globally for the session
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     audioContext.resume();
-  };
+  }, []);
 
   return (
-    <div className={`${
-      isDark 
-        ? "bg-gradient-to-br from-rose-950 via-purple-950 to-red-950 text-white" 
-        : "bg-gradient-to-br from-rose-200 via-purple-200 to-red-100 text-slate-950"
-    } min-h-screen flex transition-colors duration-500 ${useSidebar ? "flex-row" : "flex-col"}`}>
+    <MotionConfig 
+      transition={featureFlags.disable_animation ? { duration: 0 } : undefined}
+      reducedMotion={featureFlags.disable_animation ? "always" : "user"}
+    >
+      <div className={`${
+        isDark 
+          ? "bg-gradient-to-br from-rose-950 via-purple-950 to-red-950 text-white" 
+          : "bg-gradient-to-br from-rose-200 via-purple-200 to-red-100 text-slate-950"
+      } min-h-screen flex transition-colors duration-500 ${useSidebar ? "flex-row" : "flex-col"} ${featureFlags.disable_animation ? "reduce-animations" : ""}`}>
       {/* Global Immersive Background Blur */}
       <div className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
         <AnimatePresence mode="wait">
@@ -2535,7 +3220,11 @@ function App() {
       </div>
 
       <AnimatePresence>
-        {showSplash && <SplashScreen isDark={isDark} onEnter={handleEnterApp} />}
+        {showSplash && (
+          <div onClick={handleEnterApp} className="cursor-pointer z-[101]">
+            <SplashScreen isDark={isDark} onEnter={handleEnterApp} />
+          </div>
+        )}
       </AnimatePresence>
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} isDark={isDark} liquidGlass={liquidGlass} setIsDev={setIsDev} setUserData={setUserData} />
       
@@ -2624,8 +3313,20 @@ function App() {
         </form>
       </LiquidModal>
 
-      <div className={`flex-1 flex flex-col min-h-screen ${useSidebar ? (isSidebarExpanded ? "md:pl-72" : "md:pl-24") : ""}`}>
+      <div className={`flex-1 flex flex-col min-h-screen ${
+        useSidebar && !isMobile 
+          ? (isSidebarRight 
+              ? (isSidebarExpanded ? "pr-[320px] pl-8" : "pr-24 pl-8") 
+              : (isSidebarExpanded ? "pl-[320px] pr-8" : "pl-24 pr-8")
+            ) 
+          : "px-0"
+      }`}>
         <AnimatePresence>
+          {useSidebar && !isMobile && (
+            <div className="fixed inset-0 pointer-events-none z-[40]">
+               {/* This space is reserved for the floating sidebar shadows/click-through */}
+            </div>
+          )}
           {isSearchOpen && (
             <motion.div 
               initial={{ opacity: 0 }}
@@ -2637,142 +3338,274 @@ function App() {
           )}
         </AnimatePresence>
 
-      <LiquidModal 
-        isOpen={!!customAlert} 
-        onClose={() => setCustomAlert(null)} 
-        isDark={isDark}
-        title={customAlert?.title}
-        description={customAlert?.message}
-        liquidGlass={liquidGlass}
-      >
-        <button 
-          onClick={() => setCustomAlert(null)}
-          className="w-full py-4 bg-purple-500/10 hover:bg-purple-500/20 text-purple-500 rounded-3xl font-bold transition-all active:scale-95"
-        >
-          Xác nhận
-        </button>
-      </LiquidModal>
-
-
-      <div className="flex-1 overflow-y-auto pb-32 flex flex-col">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={displayTab}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            className="h-full flex flex-col"
-          >
-            {displayTab === "Trang chủ" && (
-              <HomeContent 
-                setActiveTab={setActiveTab} 
-                setActiveChannel={handleChannelSelect} 
-                isDark={isDark} 
-                favorites={favorites} 
-                toggleFavorite={toggleFavorite} 
-                liquidGlass={liquidGlass}
-                user={user}
-                onLogin={handleLogin}
-                slideIndex={slideIndex}
-                direction={direction}
-                paginate={paginate}
-              />
-            )}
-            {displayTab === "Phát sóng" && (
-              <TVContent 
-                active={activeChannel} 
-                setActive={handleChannelSelect} 
-                isDark={isDark} 
-                favorites={favorites} 
-                toggleFavorite={toggleFavorite} 
-                user={user}
-                onLogin={handleLogin}
-                isDev={isDev}
-                liquidGlass={liquidGlass}
-                sortOrder={sortOrder}
-                setSortOrder={setSortOrder}
-                showSplash={showSplash}
-              />
-            )}
-            {displayTab === "Lưu trữ" && (
-              <EventsContent isDark={isDark} liquidGlass={liquidGlass} />
-            )}
-            {displayTab === "Cài đặt" && (
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 max-w-4xl mx-auto w-full">
-        <div className="flex items-center gap-3 mb-6">
-          <Settings className="w-8 h-8 text-purple-500" />
-          <h2 className={`text-3xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>Cài đặt</h2>
-        </div>
-        <SettingsContent 
-          isDark={isDark} 
-          setIsDark={setIsDark} 
-          isDev={isDev} 
-          setIsDev={setIsDev} 
+        <LiquidModal 
+          isOpen={!!customAlert} 
+          onClose={() => setCustomAlert(null)} 
+          isDark={isDark}
+          title={customAlert?.title}
+          description={customAlert?.message}
           liquidGlass={liquidGlass}
-          setLiquidGlass={setLiquidGlass}
-          useSidebar={useSidebar}
-          setUseSidebar={setUseSidebar}
-          user={user}
-          userData={userData}
-          setUserData={setUserData}
-          onAlert={(title, msg) => setCustomAlert({ title, message: msg })}
-          onLogin={handleLogin}
-          favorites={favorites}
-        />
-      </div>
-    )}
-    {displayTab === "Quản trị" && (isAdmin || isDev) && <AdminContent isDark={isDark} liquidGlass={liquidGlass} />}
-          </motion.div>
-        </AnimatePresence>
+        >
+          <button 
+            onClick={() => setCustomAlert(null)}
+            className="w-full py-4 bg-purple-500/10 hover:bg-purple-500/20 text-purple-500 rounded-3xl font-bold transition-all active:scale-95"
+          >
+            Xác nhận
+          </button>
+        </LiquidModal>
+
+        <div className="flex-1 overflow-y-auto pb-32 flex flex-col">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={displayTab}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="h-full flex flex-col"
+            >
+              {displayTab === "Trang chủ" && (
+                <HomeContent 
+                  setActiveTab={setActiveTab} 
+                  setActiveChannel={handleChannelSelect} 
+                  isDark={isDark} 
+                  favorites={favorites} 
+                  toggleFavorite={toggleFavorite} 
+                  liquidGlass={liquidGlass}
+                  user={user}
+                  onLogin={handleLogin}
+                  slideIndex={slideIndex}
+                  direction={direction}
+                  paginate={paginate}
+                />
+              )}
+              {displayTab === "Phát sóng" && (
+                <TVContent 
+                  active={activeChannel} 
+                  setActive={handleChannelSelect} 
+                  isDark={isDark} 
+                  favorites={favorites} 
+                  toggleFavorite={toggleFavorite} 
+                  user={user}
+                  onLogin={handleLogin}
+                  isDev={isDev}
+                  liquidGlass={liquidGlass}
+                  sortOrder={sortOrder}
+                  setSortOrder={setSortOrder}
+                  showSplash={showSplash}
+                  featureFlags={featureFlags}
+                  searchQuery={searchQuery}
+                />
+              )}
+              {displayTab === "Lưu trữ" && (
+                <EventsContent isDark={isDark} liquidGlass={liquidGlass} />
+              )}
+              {displayTab === "Cài đặt" && (
+                <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 max-w-4xl mx-auto w-full">
+                    <div className="flex items-center gap-4 mb-10">
+                      <Settings className={`w-10 h-10 ${isDark ? "text-white" : "text-slate-900"}`} />
+                      <h2 className={`text-3xl font-semibold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Cài đặt</h2>
+                    </div>
+                  <SettingsContent 
+                    isDark={isDark} 
+                    setIsDark={setIsDark} 
+                    isDev={isDev} 
+                    setIsDev={setIsDev} 
+                    featureFlags={featureFlags}
+                    setFeatureFlags={setFeatureFlags}
+                    liquidGlass={liquidGlass} 
+                    setLiquidGlass={setLiquidGlass}
+                    useSidebar={useSidebar}
+                    setUseSidebar={setUseSidebar}
+                    isSidebarRight={isSidebarRight}
+                    setIsSidebarRight={setIsSidebarRight}
+                    isPinningEnabled={isPinningEnabled}
+                    setIsPinningEnabled={setIsPinningEnabled}
+                    user={user}
+                    userData={userData}
+                    setUserData={setUserData}
+                    onAlert={(title, msg) => setCustomAlert({ title, message: msg })}
+                    onLogin={handleLogin}
+                    favorites={favorites}
+                    onUpdateLogsClick={() => setActiveTab("Update Logs")}
+                  />
+                </div>
+              )}
+              {displayTab === "Update Logs" && (
+                <UpdateLogsContent isDark={isDark} onBack={() => setActiveTab("Cài đặt")} />
+              )}
+              {displayTab === "Quản trị" && (isAdmin || isDev) && <AdminContent isDark={isDark} liquidGlass={liquidGlass} />}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
       
       {/* Sidebar Redesign */}
       <AnimatePresence>
         {useSidebar && (
           <>
+            {/* Mobile Hamburger Toggle */}
+            {isMobile && !isSidebarExpanded && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                onClick={() => setIsSidebarExpanded(true)}
+                className={`fixed top-6 z-[51] p-3.5 rounded-2xl shadow-2xl transition-all active:scale-95 ${
+                  isSidebarRight ? "right-6" : "left-6"
+                } ${
+                  isDark ? "bg-[#11141d] text-white border border-white/10" : "bg-white text-slate-800 border border-slate-200"
+                } backdrop-blur-xl`}
+              >
+                <Menu size={24} />
+              </motion.button>
+            )}
+
             {/* Mobile Backdrop Overlay */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsSidebarExpanded(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[48] md:hidden"
-            />
+            {isMobile && isSidebarExpanded && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsSidebarExpanded(false)}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[48]"
+              />
+            )}
             
             <motion.div
-              initial={{ x: -288 }}
-              animate={{ x: 0 }}
-              exit={{ x: -288 }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className={`fixed z-50 left-0 top-0 h-full flex flex-col border-r transition-all duration-500 ${
-                isDark ? "bg-[#0b1221] border-white/5" : "bg-white border-slate-200"
-              } ${isSidebarExpanded ? "w-72" : "w-0 md:w-24 overflow-hidden"}`}
+              initial={{ x: isSidebarRight ? 288 : -288 }}
+              animate={{ 
+                x: 0, 
+                width: isSidebarExpanded ? 288 : (isMobile ? 0 : 80),
+                opacity: (isMobile && !isSidebarExpanded) ? 0 : 1,
+                visibility: (isMobile && !isSidebarExpanded) ? "hidden" : "visible" as any
+              }}
+              exit={{ x: isSidebarRight ? 288 : -288 }}
+              transition={{ type: "spring", damping: 30, stiffness: 300, width: { duration: 0.3 } }}
+              className={`fixed z-50 h-[calc(100%-48px)] flex flex-col transition-colors duration-500 overflow-hidden ${
+                isSidebarRight ? "right-6" : "left-6"
+              } ${
+                isMobile 
+                  ? "top-0 h-full !rounded-none !m-0 !left-0 !right-0 transition-none" 
+                  : "top-6 !rounded-[32px] border shadow-2xl backdrop-blur-md"
+              } ${
+                isDark ? "bg-[#11141d]/80 border-white/5 shadow-black/50" : "bg-white/80 border-slate-200 shadow-slate-200"
+              }`}
             >
-              {/* Logo Section */}
-              <div className={`p-8 flex items-center gap-4 border-b border-white/5 ${!isSidebarExpanded ? "md:justify-center" : ""}`}>
-                <div className="w-12 h-12 flex-shrink-0">
-                  <img 
-                    src="https://static.wikia.nocookie.net/ftv/images/9/93/Vpl.png/revision/latest?cb=20260412135144&path-prefix=vi" 
-                    alt="Vplay" 
-                    className="w-full h-full object-contain"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-                {isSidebarExpanded && (
-                  <motion.span 
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className={`font-bold text-2xl tracking-tight whitespace-nowrap ${isDark ? "text-white" : "text-slate-900"}`}
+              {/* Logo & Hamburger Section */}
+              <div className="p-6">
+                <div className={`flex items-center gap-4 h-12 ${!isSidebarExpanded ? "justify-center" : ""}`}>
+                  <button 
+                    onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+                    className={`p-2 rounded-xl transition-all ${isDark ? "hover:bg-white/5 text-white" : "hover:bg-slate-100 text-slate-800"}`}
                   >
-                    Vplay
-                  </motion.span>
-                )}
+                    <Menu size={28} />
+                  </button>
+                  <AnimatePresence>
+                    {isSidebarExpanded && (
+                      <motion.div 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        className="flex items-center gap-3"
+                      >
+                        <div className={`relative w-12 h-12 flex items-center justify-center rounded-xl ${!isDark ? "bg-white shadow-sm ring-1 ring-slate-200/50" : ""}`}>
+                          <img 
+                            src="https://static.wikia.nocookie.net/ftv/images/a/ab/Imagexvxvz.png/revision/latest/scale-to-width-down/1000?cb=20260429082350&path-prefix=vi" 
+                            alt="Vplay" 
+                            className="h-10 w-10 object-contain"
+                            referrerPolicy="no-referrer"
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
 
+              {/* Integrated Search Bar */}
+              <AnimatePresence>
+                {isSidebarExpanded && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="px-6 py-2 mb-4 relative"
+                  >
+                    <div className={`relative group flex items-center gap-3 px-4 py-3 rounded-xl overflow-hidden transition-all ${
+                      isDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-50 hover:bg-slate-100"
+                    }`}>
+                      <Search size={18} className={`${isDark ? "text-slate-500" : "text-slate-400"} group-focus-within:text-purple-500 transition-colors`} />
+                      <input 
+                        type="text" 
+                        placeholder="Search Vplay"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className={`bg-transparent border-none outline-none text-sm font-semibold w-full ${isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-400"}`}
+                      />
+                      <div className={`absolute bottom-0 left-0 h-[2px] w-full transition-all duration-300 ${isDark ? "bg-white/10" : "bg-slate-200"} group-focus-within:bg-purple-500 group-focus-within:shadow-[0_0_10px_rgba(168,85,247,0.5)]`} />
+                    </div>
+
+                    {/* Search Results Dropdown */}
+                    <AnimatePresence>
+                      {searchQuery.trim().length > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          className={`absolute top-full left-6 right-6 mt-2 z-[60] overflow-hidden border shadow-2xl ${
+                            isDark ? "bg-slate-900/95 border-white/5" : "bg-white border-slate-200"
+                          } rounded-2xl backdrop-blur-3xl`}
+                        >
+                          <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+                            {isSearchLoading ? (
+                              <div className="p-8 flex flex-col items-center justify-center space-y-4">
+                                <img 
+                                  src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
+                                  alt="Loading" 
+                                  className={`w-10 h-10 ${isDark ? "filter brightness-0 invert" : ""}`}
+                                />
+                                <span className={`text-[10px] font-semibold uppercase tracking-widest ${isDark ? "text-white/40" : "text-slate-400"}`}>Đang tìm kiếm...</span>
+                              </div>
+                            ) : searchResults.length > 0 ? (
+                              <div className="p-2 space-y-1">
+                                {searchResults.map(ch => (
+                                  <button
+                                    key={ch.name}
+                                    onClick={() => {
+                                      handleChannelSelect(ch);
+                                      setSearchQuery("");
+                                    }}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
+                                      isDark ? "hover:bg-white/5" : "hover:bg-slate-50"
+                                    }`}
+                                  >
+                                    <div className={`w-10 h-10 flex items-center justify-center rounded-lg ${isDark ? "bg-white/5" : "bg-white shadow-sm"}`}>
+                                      <img src={ch.logo} alt={ch.name} className="w-8 h-8 object-contain" referrerPolicy="no-referrer" />
+                                    </div>
+                                    <div className="flex flex-col items-start min-w-0">
+                                      <span className={`text-sm font-semibold truncate w-full ${isDark ? "text-white" : "text-slate-900"}`}>{ch.name}</span>
+                                      <span className="text-[10px] font-semibold text-slate-500 uppercase">{ch.category}</span>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="p-8 text-center text-slate-500 text-[10px] font-semibold uppercase tracking-widest">
+                                Không tìm thấy kết quả
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* Navigation Items */}
-              <div className={`flex-1 py-8 px-4 space-y-3 ${!isSidebarExpanded ? "md:px-2" : ""}`}>
-                {tabs.map((tab) => {
+              <div className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar">
+                {tabs.filter(t => t.id !== "Cài đặt").map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === (tab.id || tab.name);
                   return (
@@ -2780,45 +3613,104 @@ function App() {
                       key={tab.name}
                       onClick={() => {
                         setActiveTab(tab.id || tab.name);
-                        if (window.innerWidth < 768) setIsSidebarExpanded(false);
+                        if (isMobile) setIsSidebarExpanded(false);
                       }}
-                      className={`w-full flex items-center gap-5 p-4 rounded-2xl transition-all relative group ${
+                      className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all relative group h-[50px] overflow-hidden ${
                         isActive 
-                          ? (isDark ? "bg-white/10 text-white" : "bg-slate-100 text-slate-900") 
-                          : (isDark ? "text-slate-400 hover:bg-white/5 hover:text-white" : "text-slate-600 hover:bg-slate-50")
-                      } ${!isSidebarExpanded ? "md:justify-center" : ""}`}
+                          ? (isDark ? "bg-[#1d2230] text-white" : "bg-slate-100 text-slate-900") 
+                          : (isDark ? "text-slate-400 hover:text-white" : "text-slate-600 hover:bg-slate-50")
+                      } ${!isSidebarExpanded ? "justify-center" : ""}`}
                     >
-                      <Icon className={`w-6 h-6 flex-shrink-0 transition-colors`} />
-                      {isSidebarExpanded && (
-                        <span className="font-semibold text-lg whitespace-nowrap">{tab.name}</span>
-                      )}
-                      {isActive && isSidebarExpanded && (
+                      {isActive && (
                         <motion.div 
-                          layoutId="activeDot"
-                          className="absolute right-6 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" 
+                          layoutId="sidebarActivePill"
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-purple-500 rounded-r-full" 
                         />
+                      )}
+                      <Icon size={24} className={`flex-shrink-0 transition-all ${isActive ? "text-purple-500" : "group-hover:scale-110"}`} />
+                      {isSidebarExpanded && (
+                        <span className="font-bold text-base whitespace-nowrap">{tab.name}</span>
                       )}
                     </button>
                   );
                 })}
+
+                {/* Channel Pinning Section */}
+                {isPinningEnabled && favorites.length > 0 && (
+                  <div className="pt-4 pb-2">
+                    <div className={`h-px mx-3 mb-4 ${isDark ? "bg-white/5" : "bg-slate-100"}`} />
+                    {isSidebarExpanded && (
+                      <span className="px-5 text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Ghim Kênh</span>
+                    )}
+                    <div className="space-y-1">
+                      {favorites.map(favId => {
+                        const channel = channels.find(c => c.name === favId);
+                        if (!channel) return null;
+                        return (
+                          <button
+                            key={favId}
+                            onClick={() => {
+                              setActiveTab("Phát sóng");
+                              setActiveChannel(channel);
+                              if (isMobile) setIsSidebarExpanded(false);
+                            }}
+                            className={`w-full flex items-center gap-4 px-4 py-2 rounded-xl transition-all group h-[48px] ${
+                              isDark ? "text-slate-400 hover:text-white hover:bg-white/5" : "text-slate-600 hover:bg-slate-50"
+                            } ${!isSidebarExpanded ? "justify-center" : ""}`}
+                          >
+                            <img 
+                              src={channel.logo} 
+                              alt={channel.name}
+                              className={`w-8 h-8 object-contain transition-transform group-hover:scale-110 ${!isDark ? "bg-white rounded-md shadow-sm border border-slate-100 p-0.5" : ""}`}
+                              referrerPolicy="no-referrer"
+                            />
+                            {isSidebarExpanded && (
+                              <span className="font-bold text-sm whitespace-nowrap overflow-hidden text-ellipsis">{channel.name}</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Footer */}
-              <div className={`p-8 text-center border-t border-white/5 space-y-2 ${!isSidebarExpanded ? "hidden md:block md:p-4" : ""}`}>
-                {isSidebarExpanded && <p className="text-sm text-slate-500 font-mono opacity-50">vDev.26415</p>}
-                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-yellow-400 text-[10px] font-black text-black">
-                  <Sparkles size={10} />
-                  {isSidebarExpanded && "PREVIEW"}
-                </div>
+              {/* Footer Section */}
+              <div className={`p-6 mt-auto space-y-6 border-t ${isDark ? "border-white/5" : "border-slate-100"}`}>
+                {isSidebarExpanded && (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                       <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">
+                         SMR26 Dev - Build 26470
+                       </span>
+                       <div className="px-1.5 py-0.5 rounded bg-cyan-400 text-[9px] font-black text-slate-900 uppercase flex items-center gap-1 shadow-sm">
+                         <Zap size={8} fill="currentColor" /> DEV
+                       </div>
+                    </div>
+                  </div>
+                )}
+                
+                <button
+                  onClick={() => {
+                    setActiveTab("Cài đặt");
+                    if (isMobile) setIsSidebarExpanded(false);
+                  }}
+                  className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all w-full h-[50px] relative overflow-hidden ${
+                    activeTab === "Cài đặt"
+                      ? (isDark ? "bg-[#1d2230] text-white" : "bg-slate-100 text-slate-900")
+                      : (isDark ? "text-slate-400 hover:text-white" : "text-slate-600 hover:bg-slate-50")
+                  } ${!isSidebarExpanded ? "justify-center" : ""}`}
+                >
+                  {activeTab === "Cài đặt" && (
+                    <motion.div 
+                      layoutId="sidebarActivePill"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-purple-500 rounded-r-full" 
+                    />
+                  )}
+                  <SettingsIcon className={`w-6 h-6 ${activeTab === "Cài đặt" ? "text-purple-500" : ""}`} />
+                  {isSidebarExpanded && <span className="font-bold text-base">Cài đặt</span>}
+                </button>
               </div>
-
-              {/* Collapse Toggle */}
-              <button 
-                onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
-                className={`absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center shadow-xl hover:scale-110 transition-transform z-[60]`}
-              >
-                {isSidebarExpanded ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-              </button>
             </motion.div>
           </>
         )}
@@ -2826,7 +3718,7 @@ function App() {
 
       <div className={`fixed z-50 transition-all duration-500 ${
         useSidebar 
-          ? "hidden bottom-0 left-0 w-full flex justify-center pb-4 md:pb-8" 
+          ? "bottom-[-100%] opacity-0 pointer-events-none" 
           : "bottom-0 left-0 w-full flex justify-center pb-4 md:pb-8"
       }`}>
         <motion.div 
@@ -2844,18 +3736,18 @@ function App() {
             {!isSearchOpen && (
               <motion.nav 
                 key="nav-bar"
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -20, opacity: 0, scale: 0.95 }}
-                transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 100, opacity: 0, scale: 0.95 }}
+                transition={{ type: "spring", bounce: 0, duration: 0.5 }}
                 className={`flex items-center gap-2 p-2 transition-all duration-500 overflow-hidden ${
                   liquidGlass === "tinted"
-                    ? `rounded-full border shadow-[0_20px_40px_rgba(0,0,0,0.15)] backdrop-blur-[60px] max-w-full bg-white/80 border-white/80`
+                    ? `rounded-full border shadow-[0_20px_40px_rgba(0,0,0,0.15)] backdrop-blur-[100px] max-w-full bg-white/80 border-white/80`
                     : liquidGlass === "glassy"
                       ? "rounded-full border shadow-[0_30px_60px_rgba(0,0,0,0.2)] backdrop-blur-[120px] max-w-full bg-white/10 border-white/20"
                       : `rounded-none border-t w-full justify-around backdrop-blur-none shadow-2xl ${isDark ? "bg-slate-900/95 border-white/5" : "bg-white/60 border-white/40"}`
-                } ${useSidebar ? "flex-col py-6" : "flex-row"}`}>
-                <div className={`flex items-center ${liquidGlass ? (useSidebar ? "flex-col gap-6" : "gap-4 md:gap-6") : "gap-0 w-full justify-around"}`}>
+                } flex-row`}>
+                <div className={`flex items-center ${liquidGlass ? "gap-4 md:gap-6" : "gap-0 w-full justify-around"}`}>
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === (tab.id || tab.name);
@@ -2948,12 +3840,12 @@ function App() {
                 />
                 <motion.div 
                   key="search-expanded"
-                  initial={{ width: 60, height: 60, opacity: 0 }}
-                  animate={{ width: "auto", height: 60, opacity: 1 }}
-                  exit={{ width: 60, height: 60, opacity: 0 }}
+                  initial={{ y: 200, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 200, opacity: 0 }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   className={`p-1.5 flex items-center border shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden ${
-                    liquidGlass === "glassy" ? "rounded-[30px] backdrop-blur-[100px] bg-white/10 border-white/20" : liquidGlass === "tinted" ? "rounded-[30px] backdrop-blur-[40px] bg-white/90 border-white/80" : "rounded-xl backdrop-blur-none bg-white/60 border-white/40"
+                    liquidGlass === "glassy" ? "rounded-[30px] backdrop-blur-[100px] bg-white/10 border-white/20" : liquidGlass === "tinted" ? "rounded-[30px] backdrop-blur-[100px] bg-white/90 border-white/80" : "rounded-xl backdrop-blur-none bg-white/60 border-white/40"
                   }`}
                 >
                   <SearchBar 
@@ -2977,7 +3869,7 @@ function App() {
                   animate={{ borderRadius: "50%" }}
                   className={`w-[60px] h-[60px] md:w-[72px] md:h-[72px] flex items-center justify-center rounded-full border shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-500 shadow-2xl ${
                     liquidGlass === "tinted" 
-                      ? "bg-white/80 border-white/80 text-black backdrop-blur-[60px]" 
+                      ? "bg-white/80 border-white/80 text-black backdrop-blur-[100px]" 
                       : "bg-white/10 border-white/10 text-white backdrop-blur-[120px]"
                   } hover:opacity-70`}
                 >
@@ -2997,7 +3889,7 @@ function App() {
         </motion.div>
       </div>
     </div>
-  </div>
+  </MotionConfig>
 );
 }
 
